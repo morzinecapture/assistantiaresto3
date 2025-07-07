@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assistant IA Restaurant</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 600px;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.2em;
+            font-weight: 700;
+        }
+
+        .theme-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .theme-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border: none;
+            border-radius: 12px;
+            padding: 20px 15px;
+            color: white;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .theme-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .theme-btn.active {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            transform: scale(1.05);
+        }
+
+        .theme-btn.vente {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+
+        .theme-btn.tourisme {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            color: #333;
+        }
+
+        .theme-btn.quiz {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            color: #333;
+        }
+
+        .input-section {
+            margin-bottom: 30px;
+        }
+
+        .question-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+            resize: vertical;
+            min-height: 100px;
+            font-family: inherit;
+        }
+
+        .question-input:focus {
+            outline: none;
+            border-color: #4facfe;
+            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+        }
+
+        .send-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+        }
+
+        .send-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .response-area {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            min-height: 120px;
+            border: 2px solid #e9ecef;
+            font-size: 16px;
+            line-height: 1.6;
+            display: none;
+        }
+
+        .response-area.show {
+            display: block;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            color: #666;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #e0e0e0;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            color: #dc3545;
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .theme-info {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 1.8em;
+            }
+            
+            .theme-selector {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 Assistant IA Restaurant</h1>
+        
+        <div class="theme-info">
+            Choisissez votre thème d'assistance
+        </div>
+        
+        <div class="theme-selector">
+            <button class="theme-btn vente" data-theme="vente">
+                🍷 Vente Additionnelle
+            </button>
+            <button class="theme-btn tourisme" data-theme="tourisme">
+                🗺️ Conseils Touristiques
+            </button>
+            <button class="theme-btn quiz" data-theme="quiz">
+                🎯 Quiz & Jeux
+            </button>
+        </div>
+
+        <div class="input-section">
+            <textarea 
+                class="question-input" 
+                placeholder="Posez votre question ici..."
+                id="questionInput"
+            ></textarea>
+            <button class="send-btn" id="sendBtn">
+                Envoyer ma question
+            </button>
+        </div>
+
+        <div class="response-area" id="responseArea">
+            <div class="loading" id="loadingDiv">
+                <div class="spinner"></div>
+                <span>L'IA réfléchit...</span>
+            </div>
+            <div id="responseContent"></div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration des webhooks n8n
+        const webhooks = {
+            vente: 'https://morzinecap.app.n8n.cloud/webhook/b1a9c9d2-8910-4319-8d74-7045eafa2362',
+            tourisme: 'https://morzinecap.app.n8n.cloud/webhook/83f9883b-4954-44c5-8c90-f705a8ac785a',
+            quiz: 'https://morzinecap.app.n8n.cloud/webhook/morpion'
+        };
+
+        let selectedTheme = null;
+        
+        // Éléments DOM
+        const themeButtons = document.querySelectorAll('.theme-btn');
+        const questionInput = document.getElementById('questionInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const responseArea = document.getElementById('responseArea');
+        const loadingDiv = document.getElementById('loadingDiv');
+        const responseContent = document.getElementById('responseContent');
+
+        // Gestion de la sélection de thème
+        themeButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Retirer la classe active de tous les boutons
+                themeButtons.forEach(b => b.classList.remove('active'));
+                
+                // Ajouter la classe active au bouton cliqué
+                btn.classList.add('active');
+                
+                // Stocker le thème sélectionné
+                selectedTheme = btn.dataset.theme;
+                
+                // Changer le placeholder selon le thème
+                updatePlaceholder();
+            });
+        });
+
+        // Mise à jour du placeholder selon le thème
+        function updatePlaceholder() {
+            const placeholders = {
+                vente: "Exemple: Quel vin accompagnerait bien notre plat du jour ?",
+                tourisme: "Exemple: Que puis-je visiter près d'ici cet après-midi ?",
+                quiz: "Exemple: Créez-moi un quiz sur la cuisine française"
+            };
+            
+            if (selectedTheme) {
+                questionInput.placeholder = placeholders[selectedTheme];
+            }
+        }
+
+        // Gestion de l'envoi de la question
+        sendBtn.addEventListener('click', sendQuestion);
+        
+        // Envoi avec Enter (Ctrl+Enter pour nouvelle ligne)
+        questionInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.ctrlKey) {
+                e.preventDefault();
+                sendQuestion();
+            }
+        });
+
+        async function sendQuestion() {
+            const question = questionInput.value.trim();
+            
+            // Validations
+            if (!selectedTheme) {
+                alert('Veuillez d\'abord choisir un thème d\'assistance');
+                return;
+            }
+            
+            if (!question) {
+                alert('Veuillez saisir une question');
+                return;
+            }
+
+            // Préparer l'interface
+            sendBtn.disabled = true;
+            sendBtn.textContent = 'Envoi en cours...';
+            responseArea.classList.add('show');
+            loadingDiv.style.display = 'flex';
+            responseContent.style.display = 'none';
+
+            try {
+                // Appel à l'API n8n
+                const response = await fetch(webhooks[selectedTheme], {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        question: question,
+                        theme: selectedTheme,
+                        timestamp: new Date().toISOString()
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Erreur HTTP: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                // Afficher la réponse
+                displayResponse(data);
+                
+            } catch (error) {
+                console.error('Erreur:', error);
+                displayError(error.message);
+            } finally {
+                // Réinitialiser l'interface
+                sendBtn.disabled = false;
+                sendBtn.textContent = 'Envoyer ma question';
+                loadingDiv.style.display = 'none';
+                responseContent.style.display = 'block';
+            }
+        }
+
+        function displayResponse(data) {
+            // Adapter selon le format de réponse de vos webhooks n8n
+            let content = '';
+            
+            if (data.response) {
+                content = data.response;
+            } else if (data.message) {
+                content = data.message;
+            } else if (typeof data === 'string') {
+                content = data;
+            } else {
+                content = JSON.stringify(data, null, 2);
+            }
+            
+            responseContent.innerHTML = `
+                <div style="color: #333; white-space: pre-wrap;">${content}</div>
+            `;
+        }
+
+        function displayError(errorMessage) {
+            responseContent.innerHTML = `
+                <div class="error">
+                    <strong>Erreur de connexion</strong><br>
+                    ${errorMessage}<br><br>
+                    <small>Vérifiez que vos webhooks n8n sont correctement configurés et accessibles.</small>
+                </div>
+            `;
+        }
+
+        // Animation d'entrée
+        window.addEventListener('load', () => {
+            document.querySelector('.container').style.animation = 'fadeIn 0.8s ease-out';
+        });
+    </script>
+</body>
+</html>
